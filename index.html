@@ -82,9 +82,10 @@ body {
   color: var(--mist);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
-  width: 90px;
   outline: none;
 }
+.bastu-user input#nameInput { width: 60px; }
+.bastu-user input#pinInput { width: 46px; letter-spacing: 2px; border-left: 1px solid rgba(255,255,255,0.08); padding-left: 8px; }
 .bastu-user input::placeholder { color: var(--mist-dim); }
 .bastu-user button {
   background: var(--ember);
@@ -213,6 +214,63 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
   padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;
 }
 .bastu-setup-warning code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; }
+
+.bastu-admin-toggle {
+  display: inline-block;
+  margin-top: 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--mist-dim);
+  opacity: 0.5;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.bastu-admin-toggle:hover { opacity: 0.9; }
+
+.bastu-admin-panel {
+  display: none;
+  margin-top: 12px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 320px;
+}
+.bastu-admin-panel.show { display: block; }
+.bastu-admin-panel label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mist-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 10px 0 4px;
+}
+.bastu-admin-panel input {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--mist);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.bastu-admin-panel button {
+  margin-top: 14px;
+  width: 100%;
+  background: var(--ember);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 6px;
+  padding: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.bastu-admin-panel button:hover { background: var(--ember-glow); }
 </style>
 </head>
 <body>
@@ -224,6 +282,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
       </div>
       <div class="bastu-user">
         <input type="text" id="nameInput" placeholder="Tomt nr" maxlength="10" inputmode="numeric" />
+        <input type="password" id="pinInput" placeholder="PIN" maxlength="4" inputmode="numeric" />
         <button id="nameSaveBtn">Spara</button>
       </div>
     </div>
@@ -246,6 +305,15 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
       <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#6fabc4"></span> Ledigt</div>
       <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#e2672f"></span> Din bokning</div>
       <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#1e2e3a"></span> Upptaget</div>
+    </div>
+
+    <span class="bastu-admin-toggle" id="adminToggle">Admin</span>
+    <div class="bastu-admin-panel" id="adminPanel">
+      <label for="adminTomtInput">Tomt nr att återställa</label>
+      <input type="text" id="adminTomtInput" placeholder="T.ex. 34" inputmode="numeric" />
+      <label for="adminPwInput">Admin-lösenord</label>
+      <input type="password" id="adminPwInput" placeholder="Lösenord" />
+      <button id="adminResetBtn">Återställ PIN</button>
     </div>
   </div>
 
@@ -280,6 +348,7 @@ const DAY_SHORT = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
 const MONTH_NAMES = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
 
 let myName = localStorage.getItem('bastu-tomt-nr') || '';
+let myPin = localStorage.getItem('bastu-pin') || '';
 let bookings = {}; // key: "YYYY-MM-DD_slotId" -> { name: tomtNr, ts }
 let weekOffset = 0;
 
@@ -287,8 +356,10 @@ const gridHolder = document.getElementById('gridHolder');
 const weekLabel = document.getElementById('weekLabel');
 const statusBox = document.getElementById('statusBox');
 const nameInput = document.getElementById('nameInput');
+const pinInput = document.getElementById('pinInput');
 const toast = document.getElementById('toast');
 nameInput.value = myName;
+pinInput.value = myPin;
 
 function pad(n) { return n < 10 ? '0'+n : ''+n; }
 function dateKey(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -431,12 +502,24 @@ async function loadBookings() {
   data.forEach(row => { bookings[row.key] = { name: row.name, ts: row.ts }; });
 }
 
-function saveName() {
+async function saveName() {
   const val = nameInput.value.trim();
+  const pin = pinInput.value.trim();
   if (!val) { showToast('Skriv ett tomtnummer först.'); return; }
+  if (!/^\d{4}$/.test(pin)) { showToast('PIN måste vara 4 siffror.'); pinInput.focus(); return; }
+
+  if (configured) {
+    const { data, error } = await supabase.rpc('set_or_check_pin', { p_tomt: val, p_pin: pin });
+    if (error) { showToast('Kunde inte verifiera PIN — försök igen.'); console.error(error); return; }
+    if (data === 'wrong_pin') { showToast('Fel PIN för tomt ' + val + '.'); return; }
+    if (data === 'invalid_pin') { showToast('PIN måste vara 4 siffror.'); return; }
+  }
+
   myName = val;
+  myPin = pin;
   localStorage.setItem('bastu-tomt-nr', myName);
-  showToast('Tomt nr sparat: ' + myName);
+  localStorage.setItem('bastu-pin', myPin);
+  showToast('Tomt ' + myName + ' sparat och låst till den här enheten.');
   renderGrid(); renderStatus();
 }
 
@@ -444,6 +527,26 @@ document.getElementById('nameSaveBtn').addEventListener('click', saveName);
 nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveName(); });
 document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; renderGrid(); });
 document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; renderGrid(); });
+
+document.getElementById('adminToggle').addEventListener('click', () => {
+  document.getElementById('adminPanel').classList.toggle('show');
+});
+
+document.getElementById('adminResetBtn').addEventListener('click', async () => {
+  const tomt = document.getElementById('adminTomtInput').value.trim();
+  const pw = document.getElementById('adminPwInput').value;
+  if (!tomt) { showToast('Skriv vilket tomtnummer som ska återställas.'); return; }
+  if (!pw) { showToast('Skriv admin-lösenordet.'); return; }
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const { data, error } = await supabase.rpc('admin_reset_pin', { p_admin_pw: pw, p_tomt: tomt });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+  if (data === 'not_found') { showToast('Inget PIN registrerat för tomt ' + tomt + '.'); return; }
+  showToast('PIN för tomt ' + tomt + ' är återställt. Kan sättas på nytt.');
+  document.getElementById('adminTomtInput').value = '';
+  document.getElementById('adminPwInput').value = '';
+});
 
 async function init() {
   await loadBookings();
