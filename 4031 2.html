@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bastustugan — bokning</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+  --bg-deep: #0c151c;
+  --bg-panel: #132330;
+  --bg-panel-hover: #1a2e3d;
+  --ember: #e2672f;
+  --ember-glow: #ff8c42;
+  --birch: #a9cbdb;
+  --mist: #eaf3f6;
+  --mist-dim: #8ba3af;
+  --moss: #6fabc4;
+  --taken: #1e2e3a;
+  --taken-text: #6f8894;
+
+  background: var(--bg-deep);
+  background-image:
+    radial-gradient(ellipse 800px 400px at 50% -10%, rgba(127,184,201,0.10), transparent),
+    repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  color: var(--mist);
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  margin: 0;
+  padding: 32px 20px 48px;
+  min-height: 100vh;
+}
+
+.bastu-hero {
+  position: relative;
+  margin: -32px -20px 28px;
+  height: 200px;
+  overflow: hidden;
+}
+.bastu-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.85) brightness(0.8);
+}
+.bastu-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(12,21,28,0.1) 0%, rgba(12,21,28,0.55) 65%, var(--bg-deep) 100%);
+}
+
+.bastu-wrap { max-width: 980px; margin: 0 auto; }
+
+.bastu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.bastu-title {
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--mist);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.bastu-title span { color: var(--ember); font-style: italic; font-weight: 400; }
+
+.bastu-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--mist-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 6px;
+}
+
+.bastu-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(201,168,118,0.15);
+  border-radius: 999px;
+  padding: 6px 8px 6px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+.bastu-user input {
+  background: transparent;
+  border: none;
+  color: var(--mist);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.bastu-user input#nameInput { width: 90px; }
+.bastu-user input#pinInput { width: 46px; letter-spacing: 2px; border-left: 1px solid rgba(255,255,255,0.08); padding-left: 8px; }
+.bastu-user input::placeholder { color: var(--mist-dim); }
+.bastu-user button {
+  background: var(--ember);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.bastu-user button:hover { background: var(--ember-glow); }
+
+.bastu-status {
+  background: var(--bg-panel);
+  border: 1px solid rgba(226,103,47,0.35);
+  border-left: 3px solid var(--ember);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  color: var(--birch);
+  margin-bottom: 22px;
+  display: none;
+}
+.bastu-status.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bastu-status button {
+  background: transparent;
+  border: 1px solid rgba(226,103,47,0.5);
+  color: var(--birch);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bastu-status button:hover { background: rgba(226,103,47,0.15); }
+
+.bastu-weeknav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.bastu-weeknav button {
+  background: var(--bg-panel);
+  border: 1px solid rgba(201,168,118,0.15);
+  color: var(--mist);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  cursor: pointer;
+}
+.bastu-weeknav button:hover { background: var(--bg-panel-hover); }
+.bastu-weeknav .label {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--mist);
+}
+
+.bastu-tablewrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.bastu-table { width: 100%; border-collapse: collapse; background: var(--bg-panel); min-width: 720px; }
+.bastu-table th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--birch);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(255,255,255,0.04);
+  text-align: center;
+  white-space: nowrap;
+}
+.bastu-table th:first-child { border-left: none; text-align: left; padding-left: 14px; }
+.bastu-table td {
+  border-left: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+.bastu-daycell { padding: 8px 14px !important; text-align: left !important; white-space: nowrap; }
+.bastu-daycell .dname { font-family: 'Fraunces', serif; font-weight: 600; font-size: 14.5px; color: var(--mist); }
+.bastu-daycell .ddate { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--mist-dim); }
+tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
+
+.bastu-slot { height: 52px; cursor: pointer; transition: background 0.15s; position: relative; }
+.bastu-slot .inner { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.bastu-slot-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bastu-slot.free .inner { color: var(--moss); font-size: 15px; opacity: 0.55; }
+.bastu-slot.free:hover { background: rgba(107,143,114,0.16); }
+.bastu-slot.free:hover .inner { opacity: 1; }
+.bastu-slot.mine { background: linear-gradient(135deg, rgba(226,103,47,0.3), rgba(226,103,47,0.15)); }
+.bastu-slot.mine .bastu-slot-name { color: var(--ember-glow); }
+.bastu-slot.mine:hover { background: rgba(226,103,47,0.4); }
+.bastu-slot.taken { background: rgba(74,63,54,0.35); cursor: default; }
+.bastu-slot.taken .bastu-slot-name { color: var(--taken-text); }
+.bastu-slot.past { opacity: 0.3; cursor: default; pointer-events: none; }
+
+.bastu-legend { display: flex; gap: 18px; margin-top: 22px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--mist-dim); flex-wrap: wrap; }
+.bastu-legend-item { display: flex; align-items: center; gap: 6px; }
+.bastu-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.bastu-loading { text-align: center; padding: 40px; color: var(--mist-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+
+.bastu-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--bg-panel); border: 1px solid var(--ember); color: var(--mist);
+  padding: 12px 20px; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; z-index: 999;
+}
+.bastu-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.bastu-setup-warning {
+  background: #3a1f14; border: 1px solid var(--ember); color: var(--birch);
+  padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; line-height: 1.5;
+}
+.bastu-setup-warning code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; }
+
+.bastu-admin-toggle {
+  display: inline-block;
+  margin-top: 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--mist-dim);
+  opacity: 0.5;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.bastu-admin-toggle:hover { opacity: 0.9; }
+
+.bastu-admin-panel {
+  display: none;
+  margin-top: 12px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 320px;
+}
+.bastu-admin-panel.show { display: block; }
+.bastu-admin-panel label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mist-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 10px 0 4px;
+}
+.bastu-admin-panel input {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--mist);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.bastu-admin-panel button {
+  margin-top: 14px;
+  width: 100%;
+  background: var(--ember);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 6px;
+  padding: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.bastu-admin-panel button:hover { background: var(--ember-glow); }
+</style>
+</head>
+<body>
+  <div class="bastu-hero"><img src="splash.jpg" alt="" /></div>
+  <div class="bastu-wrap">
+    <div class="bastu-header">
+      <div>
+        <h1 class="bastu-title">Bastustugan<span>.</span></h1>
+        <div class="bastu-sub">Bokning av bastupass</div>
+      </div>
+      <div class="bastu-user">
+        <input type="text" id="nameInput" placeholder="Tomt nr" maxlength="10" inputmode="numeric" />
+        <input type="password" id="pinInput" placeholder="PIN" maxlength="4" inputmode="numeric" />
+        <button id="nameSaveBtn">Spara</button>
+      </div>
+    </div>
+
+    <div id="setupWarning" class="bastu-setup-warning" style="display:none">
+      ⚠️ Appen är inte kopplad till en databas än. Fyll i <code>SUPABASE_URL</code> och <code>SUPABASE_ANON_KEY</code> högst upp i koden (se instruktionerna du fick av Claude).
+    </div>
+
+    <div class="bastu-status" id="statusBox"></div>
+
+    <div class="bastu-weeknav">
+      <button id="prevWeek">&larr; Föreg. vecka</button>
+      <div class="label" id="weekLabel"></div>
+      <button id="nextWeek">Nästa vecka &rarr;</button>
+    </div>
+
+    <div id="gridHolder"><div class="bastu-loading">Eldar upp bastun…</div></div>
+
+    <div class="bastu-legend">
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#6fabc4"></span> Ledigt</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#e2672f"></span> Din bokning</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#1e2e3a"></span> Upptaget</div>
+    </div>
+
+    <span class="bastu-admin-toggle" id="adminToggle">Admin</span>
+    <div class="bastu-admin-panel" id="adminPanel">
+      <label for="adminTomtInput">Tomt nr att återställa</label>
+      <input type="text" id="adminTomtInput" placeholder="T.ex. 34" inputmode="numeric" />
+      <label for="adminPwInput">Admin-lösenord</label>
+      <input type="password" id="adminPwInput" placeholder="Lösenord" />
+      <button id="adminResetBtn">Återställ PIN</button>
+      <button id="adminCleanupBtn" style="margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--mist-dim);">Rensa gamla bokningar</button>
+    </div>
+  </div>
+
+  <div class="bastu-toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ---------------------------------------------------------
+// FYLL I DINA EGNA SUPABASE-UPPGIFTER HÄR (Project Settings > API)
+const SUPABASE_URL = 'https://zeixqdprasspwpbvcgbl.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P';
+// ---------------------------------------------------------
+
+const configured = !SUPABASE_URL.includes('DIN_') && !SUPABASE_ANON_KEY.includes('DIN_');
+if (!configured) document.getElementById('setupWarning').style.display = 'block';
+
+const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const SLOTS = [
+  { id: 's8',  label: '8–10' },
+  { id: 's10', label: '10–12' },
+  { id: 's12', label: '12–14' },
+  { id: 's14', label: '14–16' },
+  { id: 's16', label: '16–18' },
+  { id: 's18', label: '18–20' },
+  { id: 's20', label: '20–22' },
+  { id: 's22', label: '22–24' },
+];
+const DAY_NAMES = ['Söndag','Måndag','Tisdag','Onsdag','Torsdag','Fredag','Lördag'];
+const DAY_SHORT = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+const MONTH_NAMES = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+
+let myName = localStorage.getItem('bastu-tomt-nr') || '';
+let myPin = localStorage.getItem('bastu-pin') || '';
+let bookings = {}; // key: "YYYY-MM-DD_slotId" -> { name: tomtNr, ts }
+let weekOffset = 0;
+
+const gridHolder = document.getElementById('gridHolder');
+const weekLabel = document.getElementById('weekLabel');
+const statusBox = document.getElementById('statusBox');
+const nameInput = document.getElementById('nameInput');
+const pinInput = document.getElementById('pinInput');
+const toast = document.getElementById('toast');
+nameInput.value = myName;
+pinInput.value = myPin;
+
+function pad(n) { return n < 10 ? '0'+n : ''+n; }
+function dateKey(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function startOfWeek(offset) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const day = now.getDay();
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + offset*7);
+  return monday;
+}
+function isSameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+function slotIsPast(date, slot) {
+  const now = new Date();
+  const startHour = parseInt(slot.label.split('–')[0], 10);
+  const slotStart = new Date(date); slotStart.setHours(startHour,0,0,0);
+  const slotEnd = new Date(slotStart.getTime() + 2*60*60*1000);
+  return slotEnd < now;
+}
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2600);
+}
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function myFutureBookingKey() {
+  for (const key in bookings) {
+    const b = bookings[key];
+    if (b.name === myName) {
+      const [dateStr, slotId] = key.split('_');
+      const slot = SLOTS.find(s => s.id === slotId);
+      const d = new Date(dateStr + 'T00:00:00');
+      if (!slotIsPast(d, slot)) return key;
+    }
+  }
+  return null;
+}
+
+function renderStatus() {
+  const key = myFutureBookingKey();
+  if (!myName) { statusBox.classList.remove('show'); return; }
+  if (key) {
+    const [dateStr, slotId] = key.split('_');
+    const slot = SLOTS.find(s => s.id === slotId);
+    const d = new Date(dateStr + 'T00:00:00');
+    const label = DAY_NAMES[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()];
+    statusBox.classList.add('show');
+    statusBox.innerHTML = `<span>🔥 Du har bokat: <strong style="color:var(--ember-glow)">${label}, ${slot.label}</strong></span>
+      <button id="cancelMineBtn">Avboka</button>`;
+    document.getElementById('cancelMineBtn').onclick = () => cancelBooking(key);
+  } else {
+    statusBox.classList.add('show');
+    statusBox.innerHTML = `<span>Du har inget bokat pass just nu — välj ett ledigt pass nedan.</span>`;
+  }
+}
+
+function renderWeekLabel(monday) {
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  weekLabel.textContent = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()]} – ${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()]}`;
+}
+
+function renderGrid() {
+  const monday = startOfWeek(weekOffset);
+  renderWeekLabel(monday);
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let thead = '<tr><th>Dag</th>' + SLOTS.map(s => `<th>${s.label}</th>`).join('') + '</tr>';
+  let rows = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const key = dateKey(d);
+    const todayClass = isSameDay(d, today) ? ' is-today' : '';
+    rows += `<tr class="${todayClass.trim()}">
+      <td class="bastu-daycell">
+        <div class="dname">${DAY_SHORT[d.getDay()]}</div>
+        <div class="ddate">${d.getDate()} ${MONTH_NAMES[d.getMonth()]}</div>
+      </td>`;
+    SLOTS.forEach(slot => {
+      const bKey = key + '_' + slot.id;
+      const b = bookings[bKey];
+      const past = slotIsPast(d, slot);
+      let cls = 'free';
+      let inner = '·';
+      if (b) {
+        cls = (b.name === myName) ? 'mine' : 'taken';
+        inner = `<span class="bastu-slot-name">${b.name === myName ? 'Du' : escapeHtml(b.name)}</span>`;
+      }
+      if (past) cls += ' past';
+      rows += `<td class="bastu-slot ${cls}" data-key="${bKey}"><div class="inner">${inner}</div></td>`;
+    });
+    rows += '</tr>';
+  }
+
+  gridHolder.innerHTML = `<div class="bastu-tablewrap"><table class="bastu-table"><thead>${thead}</thead><tbody>${rows}</tbody></table></div>`;
+  gridHolder.querySelectorAll('.bastu-slot.free, .bastu-slot.mine').forEach(el => {
+    el.addEventListener('click', () => handleSlotClick(el.dataset.key));
+  });
+}
+
+async function handleSlotClick(key) {
+  if (!myName) { showToast('Skriv ditt tomtnummer högst upp och tryck Spara först.'); nameInput.focus(); return; }
+  const existing = bookings[key];
+  if (existing && existing.name === myName) { cancelBooking(key); return; }
+  if (existing) return;
+
+  const myKey = myFutureBookingKey();
+  if (myKey) { showToast('Du har redan ett bokat pass — avboka det först.'); return; }
+
+  const record = { name: myName, ts: Date.now() };
+  bookings[key] = record;
+  renderGrid(); renderStatus();
+
+  if (configured) {
+    const { error } = await supabase.from('bookings').upsert({ key, name: record.name, ts: record.ts });
+    if (error) { delete bookings[key]; renderGrid(); renderStatus(); showToast('Kunde inte spara — försök igen.'); console.error(error); return; }
+  }
+  showToast('Pass bokat! 🔥 Trevlig bastu.');
+}
+
+async function cancelBooking(key) {
+  delete bookings[key];
+  renderGrid(); renderStatus();
+  if (configured) {
+    const { error } = await supabase.from('bookings').delete().eq('key', key);
+    if (error) { showToast('Kunde inte avboka — försök igen.'); console.error(error); return; }
+  }
+  showToast('Passet avbokat.');
+}
+
+async function loadBookings() {
+  if (!configured) { bookings = {}; return; }
+  const { data, error } = await supabase.from('bookings').select('key, name, ts');
+  if (error) { console.error(error); bookings = {}; return; }
+  bookings = {};
+  data.forEach(row => { bookings[row.key] = { name: row.name, ts: row.ts }; });
+}
+
+async function saveName() {
+  const val = nameInput.value.trim();
+  const pin = pinInput.value.trim();
+  if (!val) { showToast('Skriv ett tomtnummer först.'); return; }
+  if (!/^\d{4}$/.test(pin)) { showToast('PIN måste vara 4 siffror.'); pinInput.focus(); return; }
+
+  if (configured) {
+    const { data, error } = await supabase.rpc('set_or_check_pin', { p_tomt: val, p_pin: pin });
+    if (error) { showToast('Kunde inte verifiera PIN — försök igen.'); console.error(error); return; }
+    if (data === 'wrong_pin') { showToast('Fel PIN för tomt ' + val + '.'); return; }
+    if (data === 'invalid_pin') { showToast('PIN måste vara 4 siffror.'); return; }
+  }
+
+  myName = val;
+  myPin = pin;
+  localStorage.setItem('bastu-tomt-nr', myName);
+  localStorage.setItem('bastu-pin', myPin);
+  showToast('Tomt ' + myName + ' sparat och låst till den här enheten.');
+  renderGrid(); renderStatus();
+}
+
+document.getElementById('nameSaveBtn').addEventListener('click', saveName);
+nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveName(); });
+document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; renderGrid(); });
+document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; renderGrid(); });
+
+document.getElementById('adminToggle').addEventListener('click', () => {
+  document.getElementById('adminPanel').classList.toggle('show');
+});
+
+document.getElementById('adminResetBtn').addEventListener('click', async () => {
+  const tomt = document.getElementById('adminTomtInput').value.trim();
+  const pw = document.getElementById('adminPwInput').value;
+  if (!tomt) { showToast('Skriv vilket tomtnummer som ska återställas.'); return; }
+  if (!pw) { showToast('Skriv admin-lösenordet.'); return; }
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const { data, error } = await supabase.rpc('admin_reset_pin', { p_admin_pw: pw, p_tomt: tomt });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+  if (data === 'not_found') { showToast('Inget PIN registrerat för tomt ' + tomt + '.'); return; }
+  showToast('PIN för tomt ' + tomt + ' är återställt. Kan sättas på nytt.');
+  document.getElementById('adminTomtInput').value = '';
+  document.getElementById('adminPwInput').value = '';
+});
+
+document.getElementById('adminCleanupBtn').addEventListener('click', async () => {
+  const pw = document.getElementById('adminPwInput').value;
+  if (!pw) { showToast('Skriv admin-lösenordet.'); return; }
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const { data, error } = await supabase.rpc('admin_cleanup_old_bookings', { p_admin_pw: pw });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+
+  const count = data.split(':')[1] || '0';
+  showToast('Rensade ' + count + ' gamla bokningar.');
+  await loadBookings();
+  renderGrid();
+  renderStatus();
+});
+
+async function init() {
+  await loadBookings();
+  renderGrid();
+  renderStatus();
+
+  // Håll schemat live om någon annan bokar samtidigt
+  if (configured) {
+    supabase.channel('bookings-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async () => {
+        await loadBookings();
+        renderGrid();
+        renderStatus();
+      })
+      .subscribe();
+  }
+}
+init();
+</script>
+</body>
+</html>
