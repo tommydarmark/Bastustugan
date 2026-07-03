@@ -33,6 +33,26 @@ body {
   min-height: 100vh;
 }
 
+.bastu-hero {
+  position: relative;
+  margin: -32px -20px 28px;
+  height: 200px;
+  overflow: hidden;
+}
+.bastu-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.85) brightness(0.8);
+}
+.bastu-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(12,21,28,0.1) 0%, rgba(12,21,28,0.55) 65%, var(--bg-deep) 100%);
+}
+
 .bastu-wrap { max-width: 980px; margin: 0 auto; }
 
 .bastu-header {
@@ -84,7 +104,7 @@ body {
   font-size: 13px;
   outline: none;
 }
-.bastu-user input#nameInput { width: 60px; }
+.bastu-user input#nameInput { width: 90px; }
 .bastu-user input#pinInput { width: 46px; letter-spacing: 2px; border-left: 1px solid rgba(255,255,255,0.08); padding-left: 8px; }
 .bastu-user input::placeholder { color: var(--mist-dim); }
 .bastu-user button {
@@ -274,6 +294,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 </style>
 </head>
 <body>
+  <div class="bastu-hero"><img src="splash.jpg" alt="" /></div>
   <div class="bastu-wrap">
     <div class="bastu-header">
       <div>
@@ -314,6 +335,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
       <label for="adminPwInput">Admin-lösenord</label>
       <input type="password" id="adminPwInput" placeholder="Lösenord" />
       <button id="adminResetBtn">Återställ PIN</button>
+      <button id="adminCleanupBtn" style="margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--mist-dim);">Rensa gamla bokningar</button>
     </div>
   </div>
 
@@ -546,6 +568,22 @@ document.getElementById('adminResetBtn').addEventListener('click', async () => {
   showToast('PIN för tomt ' + tomt + ' är återställt. Kan sättas på nytt.');
   document.getElementById('adminTomtInput').value = '';
   document.getElementById('adminPwInput').value = '';
+});
+
+document.getElementById('adminCleanupBtn').addEventListener('click', async () => {
+  const pw = document.getElementById('adminPwInput').value;
+  if (!pw) { showToast('Skriv admin-lösenordet.'); return; }
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const { data, error } = await supabase.rpc('admin_cleanup_old_bookings', { p_admin_pw: pw });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+
+  const count = data.split(':')[1] || '0';
+  showToast('Rensade ' + count + ' gamla bokningar.');
+  await loadBookings();
+  renderGrid();
+  renderStatus();
 });
 
 async function init() {
