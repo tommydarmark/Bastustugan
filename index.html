@@ -468,7 +468,12 @@ function renderStatus() {
 
 function renderWeekLabel(monday) {
   const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
-  weekLabel.textContent = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()]} – ${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()]}`;
+  const sameYear = monday.getFullYear() === sunday.getFullYear();
+  if (sameYear) {
+    weekLabel.textContent = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()]} – ${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()]} ${sunday.getFullYear()}`;
+  } else {
+    weekLabel.textContent = `${monday.getDate()} ${MONTH_NAMES[monday.getMonth()]} ${monday.getFullYear()} – ${sunday.getDate()} ${MONTH_NAMES[sunday.getMonth()]} ${sunday.getFullYear()}`;
+  }
 }
 
 function renderGrid() {
