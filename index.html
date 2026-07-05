@@ -291,6 +291,22 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
   cursor: pointer;
 }
 .bastu-admin-panel button:hover { background: var(--ember-glow); }
+.bastu-admin-panel select {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--mist);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  outline: none;
+}
+.bastu-admin-panel hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 18px 0 4px;
+}
 </style>
 </head>
 <body>
@@ -336,6 +352,13 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
       <input type="password" id="adminPwInput" placeholder="Lösenord" />
       <button id="adminResetBtn">Återställ PIN</button>
       <button id="adminCleanupBtn" style="margin-top:8px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:var(--mist-dim);">Rensa gamla bokningar</button>
+
+      <hr>
+      <label for="adminBookingDate">Avboka: datum</label>
+      <input type="date" id="adminBookingDate" />
+      <label for="adminBookingSlot">Avboka: tid</label>
+      <select id="adminBookingSlot"></select>
+      <button id="adminCancelBookingBtn" style="margin-top:8px;">Avboka valt pass</button>
     </div>
   </div>
 
@@ -586,7 +609,35 @@ document.getElementById('adminCleanupBtn').addEventListener('click', async () =>
   renderStatus();
 });
 
+document.getElementById('adminCancelBookingBtn').addEventListener('click', async () => {
+  const pw = document.getElementById('adminPwInput').value;
+  const date = document.getElementById('adminBookingDate').value;
+  const slot = document.getElementById('adminBookingSlot').value;
+  if (!pw) { showToast('Skriv admin-lösenordet.'); return; }
+  if (!date) { showToast('Välj ett datum.'); return; }
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const key = date + '_' + slot;
+  const { data, error } = await supabase.rpc('admin_cancel_booking', { p_admin_pw: pw, p_key: key });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+  if (data === 'not_found') { showToast('Inget bokat pass hittades på den tiden.'); return; }
+
+  showToast('Passet är avbokat.');
+  await loadBookings();
+  renderGrid();
+  renderStatus();
+});
+
 async function init() {
+  const slotSelect = document.getElementById('adminBookingSlot');
+  SLOTS.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.label;
+    slotSelect.appendChild(opt);
+  });
+
   await loadBookings();
   renderGrid();
   renderStatus();
