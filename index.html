@@ -18,9 +18,9 @@ body {
   --birch: #a9cbdb;
   --mist: #eaf3f6;
   --mist-dim: #8ba3af;
-  --moss: #6fabc4;
-  --taken: #1e2e3a;
-  --taken-text: #6f8894;
+  --moss: #22d3ee;
+  --taken: #4a3f8a;
+  --taken-text: #c9bdf5;
 
   background: var(--bg-deep);
   background-image:
@@ -205,19 +205,18 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 .bastu-slot { height: 52px; cursor: pointer; transition: background 0.15s; position: relative; }
 .bastu-slot .inner { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
 .bastu-slot-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bastu-slot.free .inner { color: var(--moss); font-size: 15px; opacity: 0.55; }
-.bastu-slot.free:hover { background: rgba(107,143,114,0.16); }
-.bastu-slot.free:hover .inner { opacity: 1; }
-.bastu-slot.mine { background: linear-gradient(135deg, rgba(226,103,47,0.3), rgba(226,103,47,0.15)); }
-.bastu-slot.mine .bastu-slot-name { color: var(--ember-glow); }
-.bastu-slot.mine:hover { background: rgba(226,103,47,0.4); }
-.bastu-slot.taken { background: rgba(74,63,54,0.35); cursor: default; }
-.bastu-slot.taken .bastu-slot-name { color: var(--taken-text); }
+.bastu-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; background: var(--moss); }
+.bastu-slot.free:hover { background: rgba(34,211,238,0.14); }
+.bastu-slot.mine { background: linear-gradient(135deg, rgba(226,103,47,0.42), rgba(226,103,47,0.22)); }
+.bastu-slot.mine .bastu-slot-name { color: var(--ember-glow); font-weight: 600; }
+.bastu-slot.mine:hover { background: rgba(226,103,47,0.5); }
+.bastu-slot.taken { background: rgba(74,63,138,0.38); cursor: default; }
+.bastu-slot.taken .bastu-slot-name { color: var(--taken-text); font-weight: 500; }
 .bastu-slot.past { opacity: 0.3; cursor: default; pointer-events: none; }
 
 .bastu-legend { display: flex; gap: 18px; margin-top: 22px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--mist-dim); flex-wrap: wrap; }
 .bastu-legend-item { display: flex; align-items: center; gap: 6px; }
-.bastu-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.bastu-legend-dot { width: 14px; height: 14px; border-radius: 50%; }
 
 .bastu-loading { text-align: center; padding: 40px; color: var(--mist-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
 
@@ -339,9 +338,9 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
     <div id="gridHolder"><div class="bastu-loading">Eldar upp bastun…</div></div>
 
     <div class="bastu-legend">
-      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#6fabc4"></span> Ledigt</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#22d3ee"></span> Ledigt</div>
       <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#e2672f"></span> Din bokning</div>
-      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#1e2e3a"></span> Upptaget</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#8a6fd1"></span> Upptaget</div>
     </div>
 
     <span class="bastu-admin-toggle" id="adminToggle">Admin</span>
@@ -497,7 +496,7 @@ function renderGrid() {
       const b = bookings[bKey];
       const past = slotIsPast(d, slot);
       let cls = 'free';
-      let inner = '·';
+      let inner = '<span class="bastu-dot"></span>';
       if (b) {
         cls = (b.name === myName) ? 'mine' : 'taken';
         inner = `<span class="bastu-slot-name">${b.name === myName ? 'Du' : escapeHtml(b.name)}</span>`;
