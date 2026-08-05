@@ -221,6 +221,125 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 
 .bastu-loading { text-align: center; padding: 40px; color: var(--mist-dim); font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
 
+.bastu-chat {
+  margin-top: 32px;
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 18px;
+}
+.bastu-chat-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--mist);
+  margin: 0 0 12px;
+}
+.bastu-chat-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+  margin-bottom: 14px;
+}
+.bastu-chat-empty {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--mist-dim);
+  opacity: 0.7;
+}
+.bastu-chat-item { border-left: 2px solid rgba(255,255,255,0.08); padding-left: 10px; }
+.bastu-chat-item.mine { border-left-color: var(--ember); }
+.bastu-chat-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mist-dim);
+  margin-bottom: 2px;
+}
+.bastu-chat-meta .tomt { color: var(--birch); font-weight: 500; }
+.bastu-chat-item.mine .bastu-chat-meta .tomt { color: var(--ember-glow); }
+.bastu-chat-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--mist);
+  line-height: 1.4;
+  word-break: break-word;
+}
+.bastu-chat-actions { display: flex; gap: 12px; margin-top: 4px; }
+.bastu-chat-actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--mist-dim);
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.bastu-chat-actions button:hover { opacity: 1; }
+.bastu-chat-actions button.danger:hover { color: var(--ember-glow); }
+.bastu-chat-edit-box { display: flex; gap: 8px; margin-top: 4px; }
+.bastu-chat-edit-box textarea {
+  flex: 1;
+  resize: none;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--mist);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  min-height: 34px;
+}
+.bastu-chat-edit-box .chat-save {
+  background: var(--ember); color: var(--bg-deep); border: none; border-radius: 6px;
+  padding: 0 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer;
+}
+.bastu-chat-edit-box .chat-cancel {
+  background: transparent; color: var(--mist-dim); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; padding: 0 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer;
+}
+.bastu-chat-compose { display: flex; gap: 8px; align-items: flex-end; }
+.bastu-chat-compose textarea {
+  flex: 1;
+  resize: none;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--mist);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  min-height: 40px;
+  max-height: 90px;
+}
+.bastu-chat-compose textarea::placeholder { color: var(--mist-dim); }
+.bastu-chat-compose button {
+  background: var(--ember);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bastu-chat-compose button:hover { background: var(--ember-glow); }
+.bastu-chat-hint {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: var(--mist-dim);
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
 .bastu-toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
   background: var(--bg-panel); border: 1px solid var(--ember); color: var(--mist);
@@ -337,6 +456,16 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
     </div>
 
     <div id="gridHolder"><div class="bastu-loading">Eldar upp bastun…</div></div>
+
+    <div class="bastu-chat">
+      <h2 class="bastu-chat-title">Meddelanden</h2>
+      <div class="bastu-chat-list" id="chatList"></div>
+      <div class="bastu-chat-compose">
+        <textarea id="chatInput" maxlength="200" rows="1" placeholder="Skriv ett meddelande till grannarna..."></textarea>
+        <button id="chatSendBtn">Skicka</button>
+      </div>
+      <div class="bastu-chat-hint">Synligt för alla. Spara ditt tomt nr högst upp för att kunna skicka.</div>
+    </div>
 
     <div class="bastu-legend">
       <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#22d3ee"></span> Ledigt</div>
@@ -544,6 +673,123 @@ async function cancelBooking(key) {
   showToast('Passet avbokat.');
 }
 
+function timeAgo(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getDate()} ${MONTH_NAMES[d.getMonth()]}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderChat(messages) {
+  const list = document.getElementById('chatList');
+  if (!messages.length) {
+    list.innerHTML = '<div class="bastu-chat-empty">Inga meddelanden än — skriv det första!</div>';
+    return;
+  }
+  list.innerHTML = messages.map(m => {
+    const mine = m.tomt_nr === myName;
+    const actions = mine
+      ? `<div class="bastu-chat-actions">
+           <button class="chat-edit-btn" data-id="${m.id}">Redigera</button>
+           <button class="chat-delete-own-btn danger" data-id="${m.id}">Ta bort</button>
+         </div>`
+      : `<div class="bastu-chat-actions">
+           <button class="chat-delete-admin-btn danger" data-id="${m.id}">Ta bort (admin)</button>
+         </div>`;
+    return `<div class="bastu-chat-item${mine ? ' mine' : ''}" data-id="${m.id}">
+      <div class="bastu-chat-meta"><span class="tomt">Tomt ${escapeHtml(m.tomt_nr)}</span> · ${timeAgo(m.created_at)}</div>
+      <div class="bastu-chat-text" data-role="text">${escapeHtml(m.message)}</div>
+      ${actions}
+    </div>`;
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function startEditMessage(id, currentText) {
+  const item = document.querySelector(`.bastu-chat-item[data-id="${id}"]`);
+  if (!item) return;
+  const textEl = item.querySelector('[data-role="text"]');
+  const actionsEl = item.querySelector('.bastu-chat-actions');
+  textEl.style.display = 'none';
+  actionsEl.style.display = 'none';
+
+  const editBox = document.createElement('div');
+  editBox.className = 'bastu-chat-edit-box';
+  editBox.innerHTML = `
+    <textarea maxlength="200">${currentText.replace(/</g, '&lt;')}</textarea>
+    <button class="chat-save">Spara</button>
+    <button class="chat-cancel">Avbryt</button>
+  `;
+  item.appendChild(editBox);
+
+  editBox.querySelector('.chat-save').addEventListener('click', async () => {
+    const newText = editBox.querySelector('textarea').value.trim();
+    if (!newText) { showToast('Meddelandet kan inte vara tomt.'); return; }
+    const { error } = await supabase.from('messages').update({ message: newText }).eq('id', id).eq('tomt_nr', myName);
+    if (error) { showToast('Kunde inte spara — försök igen.'); console.error(error); return; }
+    await loadMessages();
+  });
+  editBox.querySelector('.chat-cancel').addEventListener('click', () => {
+    editBox.remove();
+    textEl.style.display = '';
+    actionsEl.style.display = '';
+  });
+}
+
+async function deleteOwnMessage(id) {
+  const { error } = await supabase.from('messages').delete().eq('id', id).eq('tomt_nr', myName);
+  if (error) { showToast('Kunde inte ta bort — försök igen.'); console.error(error); return; }
+  await loadMessages();
+}
+
+async function deleteMessageAsAdmin(id) {
+  const pw = window.prompt('Admin-lösenord för att ta bort det här meddelandet:');
+  if (pw === null) return;
+  if (!pw) { showToast('Inget lösenord angavs.'); return; }
+  const { data, error } = await supabase.rpc('admin_delete_message', { p_admin_pw: pw, p_id: id });
+  if (error) { showToast('Något gick fel — försök igen.'); console.error(error); return; }
+  if (data === 'wrong_admin_pw') { showToast('Fel admin-lösenord.'); return; }
+  if (data === 'not_found') { showToast('Meddelandet fanns inte längre.'); return; }
+  showToast('Meddelandet borttaget.');
+  await loadMessages();
+}
+
+document.getElementById('chatList').addEventListener('click', (e) => {
+  const id = e.target.dataset.id;
+  if (!id) return;
+  if (e.target.classList.contains('chat-edit-btn')) {
+    const item = document.querySelector(`.bastu-chat-item[data-id="${id}"]`);
+    const currentText = item.querySelector('[data-role="text"]').textContent;
+    startEditMessage(id, currentText);
+  } else if (e.target.classList.contains('chat-delete-own-btn')) {
+    deleteOwnMessage(id);
+  } else if (e.target.classList.contains('chat-delete-admin-btn')) {
+    deleteMessageAsAdmin(id);
+  }
+});
+
+async function loadMessages() {
+  if (!configured) return;
+  const { data, error } = await supabase
+    .from('messages')
+    .select('id, tomt_nr, message, created_at')
+    .order('created_at', { ascending: true })
+    .limit(50);
+  if (error) { console.error(error); return; }
+  renderChat(data);
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!myName) { showToast('Spara ditt tomt nr högst upp först.'); nameInput.focus(); return; }
+  if (!text) return;
+  if (!configured) { showToast('Databasen är inte kopplad.'); return; }
+
+  const { error } = await supabase.from('messages').insert({ tomt_nr: myName, message: text });
+  if (error) { showToast('Kunde inte skicka — försök igen.'); console.error(error); return; }
+  input.value = '';
+  await loadMessages();
+}
+
 async function loadBookings() {
   if (!configured) { bookings = {}; return; }
   const { data, error } = await supabase.from('bookings').select('key, name, ts');
@@ -577,6 +823,11 @@ document.getElementById('nameSaveBtn').addEventListener('click', saveName);
 nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveName(); });
 document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; renderGrid(); });
 document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; renderGrid(); });
+
+document.getElementById('chatSendBtn').addEventListener('click', sendMessage);
+document.getElementById('chatInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
 
 document.getElementById('adminToggle').addEventListener('click', () => {
   document.getElementById('adminPanel').classList.toggle('show');
@@ -646,6 +897,7 @@ async function init() {
   await loadBookings();
   renderGrid();
   renderStatus();
+  await loadMessages();
 
   // Håll schemat live om någon annan bokar samtidigt
   if (configured) {
@@ -654,6 +906,12 @@ async function init() {
         await loadBookings();
         renderGrid();
         renderStatus();
+      })
+      .subscribe();
+
+    supabase.channel('messages-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, async () => {
+        await loadMessages();
       })
       .subscribe();
   }
