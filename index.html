@@ -354,6 +354,71 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 }
 .bastu-setup-warning code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px; }
 
+.bastu-gate {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg-deep);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.bastu-gate-card {
+  background: var(--bg-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 36px 32px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+}
+.bastu-gate-title {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--mist);
+  margin: 0 0 4px;
+}
+.bastu-gate-title span { color: var(--ember); font-style: italic; font-weight: 400; }
+.bastu-gate-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--mist-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 24px;
+}
+.bastu-gate-card input {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--mist);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.bastu-gate-card button {
+  width: 100%;
+  background: var(--ember);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 8px;
+  padding: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bastu-gate-card button:hover { background: var(--ember-glow); }
+.bastu-gate-error {
+  margin-top: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ember-glow);
+  min-height: 16px;
+}
+
 .bastu-admin-toggle {
   display: inline-block;
   margin-top: 28px;
@@ -429,8 +494,18 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 </style>
 </head>
 <body>
-  <div class="bastu-hero"><img src="splash.jpeg" alt="" /></div>
-  <div class="bastu-wrap">
+  <div class="bastu-gate" id="bastuGate">
+    <div class="bastu-gate-card">
+      <h1 class="bastu-gate-title">Bastustugan<span>.</span></h1>
+      <p class="bastu-gate-sub">Lösenord för samfälligheten</p>
+      <input type="password" id="gatePwInput" placeholder="Lösenord" autofocus />
+      <button id="gateUnlockBtn">Lås upp</button>
+      <div class="bastu-gate-error" id="gateError"></div>
+    </div>
+  </div>
+
+  <div class="bastu-hero" id="bastuHero" style="display:none"><img src="splash.jpeg" alt="" /></div>
+  <div class="bastu-wrap" id="bastuWrap" style="display:none">
     <div class="bastu-header">
       <div>
         <h1 class="bastu-title">Bastustugan<span>.</span></h1>
@@ -916,7 +991,36 @@ async function init() {
       .subscribe();
   }
 }
-init();
+function showApp() {
+  document.getElementById('bastuGate').style.display = 'none';
+  document.getElementById('bastuHero').style.display = '';
+  document.getElementById('bastuWrap').style.display = '';
+  init();
+}
+
+async function tryUnlock() {
+  const pw = document.getElementById('gatePwInput').value;
+  const errorEl = document.getElementById('gateError');
+  errorEl.textContent = '';
+  if (!pw) { errorEl.textContent = 'Skriv lösenordet.'; return; }
+  if (!configured) { errorEl.textContent = 'Databasen är inte kopplad.'; return; }
+
+  const { data, error } = await supabase.rpc('check_site_password', { p_pw: pw });
+  if (error) { errorEl.textContent = 'Något gick fel — försök igen.'; console.error(error); return; }
+  if (data !== true) { errorEl.textContent = 'Fel lösenord.'; return; }
+
+  localStorage.setItem('bastu-site-unlocked', 'true');
+  showApp();
+}
+
+document.getElementById('gateUnlockBtn').addEventListener('click', tryUnlock);
+document.getElementById('gatePwInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') tryUnlock();
+});
+
+if (localStorage.getItem('bastu-site-unlocked') === 'true') {
+  showApp();
+}
 </script>
 </body>
 </html>
