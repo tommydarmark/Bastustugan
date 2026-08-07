@@ -18,9 +18,11 @@ body {
   --birch: #a9cbdb;
   --mist: #eaf3f6;
   --mist-dim: #8ba3af;
-  --moss: #22d3ee;
-  --taken: #4a3f8a;
-  --taken-text: #c9bdf5;
+  --moss: #4caf50;
+  --mine: #2196f3;
+  --mine-glow: #64b5f6;
+  --taken: #e2672f;
+  --taken-text: var(--ember-glow);
 
   background: var(--bg-deep);
   background-image:
@@ -124,8 +126,8 @@ body {
 
 .bastu-status {
   background: var(--bg-panel);
-  border: 1px solid rgba(226,103,47,0.35);
-  border-left: 3px solid var(--ember);
+  border: 1px solid rgba(33,150,243,0.35);
+  border-left: 3px solid var(--mine);
   border-radius: 6px;
   padding: 12px 16px;
   font-size: 13.5px;
@@ -136,7 +138,7 @@ body {
 .bastu-status.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .bastu-status button {
   background: transparent;
-  border: 1px solid rgba(226,103,47,0.5);
+  border: 1px solid rgba(33,150,243,0.5);
   color: var(--birch);
   border-radius: 5px;
   padding: 5px 10px;
@@ -207,11 +209,11 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 .bastu-slot .inner { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
 .bastu-slot-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bastu-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; background: var(--moss); }
-.bastu-slot.free:hover { background: rgba(34,211,238,0.14); }
-.bastu-slot.mine { background: linear-gradient(135deg, rgba(226,103,47,0.42), rgba(226,103,47,0.22)); }
-.bastu-slot.mine .bastu-slot-name { color: var(--ember-glow); font-weight: 600; }
-.bastu-slot.mine:hover { background: rgba(226,103,47,0.5); }
-.bastu-slot.taken { background: rgba(74,63,138,0.38); cursor: default; }
+.bastu-slot.free:hover { background: rgba(76,175,80,0.14); }
+.bastu-slot.mine { background: linear-gradient(135deg, rgba(33,150,243,0.42), rgba(33,150,243,0.22)); }
+.bastu-slot.mine .bastu-slot-name { color: var(--mine-glow); font-weight: 600; }
+.bastu-slot.mine:hover { background: rgba(33,150,243,0.5); }
+.bastu-slot.taken { background: rgba(226,103,47,0.32); cursor: default; }
 .bastu-slot.taken .bastu-slot-name { color: var(--taken-text); font-weight: 500; }
 .bastu-slot.past { opacity: 0.3; cursor: default; pointer-events: none; }
 
@@ -251,7 +253,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
   opacity: 0.7;
 }
 .bastu-chat-item { border-left: 2px solid rgba(255,255,255,0.08); padding-left: 10px; }
-.bastu-chat-item.mine { border-left-color: var(--ember); }
+.bastu-chat-item.mine { border-left-color: var(--mine); }
 .bastu-chat-meta {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10.5px;
@@ -259,7 +261,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
   margin-bottom: 2px;
 }
 .bastu-chat-meta .tomt { color: var(--birch); font-weight: 500; }
-.bastu-chat-item.mine .bastu-chat-meta .tomt { color: var(--ember-glow); }
+.bastu-chat-item.mine .bastu-chat-meta .tomt { color: var(--mine-glow); }
 .bastu-chat-text {
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 13.5px;
@@ -356,7 +358,11 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 
 .bastu-gate {
   position: fixed; inset: 0; z-index: 1000;
-  background: var(--bg-deep);
+  background:
+    linear-gradient(rgba(12,21,28,0.94), rgba(12,21,28,0.97)),
+    url('splash.jpeg');
+  background-size: cover;
+  background-position: center 25%;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
 }
@@ -497,7 +503,7 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
   <div class="bastu-gate" id="bastuGate">
     <div class="bastu-gate-card">
       <h1 class="bastu-gate-title">Bastustugan<span>.</span></h1>
-      <p class="bastu-gate-sub">Lösenord för samfälligheten</p>
+      <p class="bastu-gate-sub">Lösenord för bastumedlemmar</p>
       <input type="password" id="gatePwInput" placeholder="Lösenord" autofocus />
       <button id="gateUnlockBtn">Lås upp</button>
       <div class="bastu-gate-error" id="gateError"></div>
@@ -530,6 +536,12 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
       <button id="nextWeek">Nästa vecka &rarr;</button>
     </div>
 
+    <div class="bastu-legend" style="margin-top:0; margin-bottom:16px;">
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#4caf50"></span> Ledigt</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#2196f3"></span> Din bokning</div>
+      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#e2672f"></span> Upptaget</div>
+    </div>
+
     <div id="gridHolder"><div class="bastu-loading">Eldar upp bastun…</div></div>
 
     <div class="bastu-chat">
@@ -540,12 +552,6 @@ tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
         <button id="chatSendBtn">Skicka</button>
       </div>
       <div class="bastu-chat-hint">Synligt för alla. Spara ditt tomt nr högst upp för att kunna skicka.</div>
-    </div>
-
-    <div class="bastu-legend">
-      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#22d3ee"></span> Ledigt</div>
-      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#e2672f"></span> Din bokning</div>
-      <div class="bastu-legend-item"><span class="bastu-legend-dot" style="background:#8a6fd1"></span> Upptaget</div>
     </div>
 
     <span class="bastu-admin-toggle" id="adminToggle">Admin</span>
@@ -661,8 +667,8 @@ function renderStatus() {
     const d = new Date(dateStr + 'T00:00:00');
     const label = DAY_NAMES[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()];
     statusBox.classList.add('show');
-    statusBox.innerHTML = `<span>🔥 Du har bokat: <strong style="color:var(--ember-glow)">${label}, ${slot.label}</strong></span>
-      <button id="cancelMineBtn">Avboka</button>`;
+    statusBox.innerHTML = `<span>🔥 Du har bokat: <strong style="color:var(--mine-glow)">${label}, ${slot.label}</strong></span>
+      <button id="cancelMineBtn" style="border-color:rgba(33,150,243,0.5)">Avboka</button>`;
     document.getElementById('cancelMineBtn').onclick = () => cancelBooking(key);
   } else {
     statusBox.classList.add('show');
