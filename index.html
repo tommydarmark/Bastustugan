@@ -178,21 +178,21 @@ body {
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.06);
 }
-.bastu-table { width: 100%; border-collapse: collapse; background: var(--bg-panel); min-width: 720px; }
+.bastu-table { width: 100%; border-collapse: collapse; background: var(--bg-panel); min-width: 560px; }
 .bastu-table th {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   color: var(--birch);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 10px 6px;
+  letter-spacing: 0.03em;
+  padding: 8px 2px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   border-left: 1px solid rgba(255,255,255,0.04);
   text-align: center;
   white-space: nowrap;
 }
-.bastu-table th:first-child { border-left: none; text-align: left; padding-left: 14px; }
+.bastu-table th:first-child { border-left: none; text-align: left; padding-left: 8px; }
 .bastu-table td {
   border-left: 1px solid rgba(255,255,255,0.04);
   border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -200,14 +200,14 @@ body {
   text-align: center;
   vertical-align: middle;
 }
-.bastu-daycell { padding: 8px 14px !important; text-align: left !important; white-space: nowrap; }
-.bastu-daycell .dname { font-family: 'Fraunces', serif; font-weight: 600; font-size: 14.5px; color: var(--mist); }
-.bastu-daycell .ddate { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--mist-dim); }
+.bastu-daycell { padding: 6px 8px !important; text-align: left !important; white-space: nowrap; }
+.bastu-daycell .dname { font-family: 'Fraunces', serif; font-weight: 600; font-size: 13px; color: var(--mist); }
+.bastu-daycell .ddate { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--mist-dim); }
 tr.is-today .bastu-daycell { background: rgba(226,103,47,0.08); }
 
-.bastu-slot { height: 52px; cursor: pointer; transition: background 0.15s; position: relative; }
+.bastu-slot { height: 42px; cursor: pointer; transition: background 0.15s; position: relative; }
 .bastu-slot .inner { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-.bastu-slot-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bastu-slot-name { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; font-weight: 500; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bastu-dot { display: inline-block; width: 13px; height: 13px; border-radius: 50%; background: var(--moss); }
 .bastu-slot.free:hover { background: rgba(76,175,80,0.14); }
 .bastu-slot.mine { background: linear-gradient(135deg, rgba(33,150,243,0.42), rgba(33,150,243,0.22)); }
