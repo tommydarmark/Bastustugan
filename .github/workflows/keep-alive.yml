@@ -2,15 +2,18 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 6 * * 1'   # Varje måndag kl 06:00 UTC (ca 07-08 svensk tid)
-  workflow_dispatch:        # Går även att köra manuellt via "Run workflow"-knappen
+    - cron: '0 6 * * *'   # Varje dag kl 06:00 UTC (istället för en gång i veckan)
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase
+      - name: Write heartbeat to Supabase
         run: |
-          curl -s "https://zeixqdprasspwpbvcgbl.supabase.co/rest/v1/bookings?select=key&limit=1" \
+          curl -s -X POST "https://zeixqdprasspwpbvcgbl.supabase.co/rest/v1/keepalive" \
             -H "apikey: sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P" \
-            -H "Authorization: Bearer sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P"
+            -H "Authorization: Bearer sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates" \
+            -d '{"id": 1, "pinged_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
