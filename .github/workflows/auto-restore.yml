@@ -1,0 +1,30 @@
+name: Auto-restore Supabase if paused
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'   # Kollar var 3:e timme, dygnet runt
+  workflow_dispatch:
+
+jobs:
+  check-and-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check project status and restore if paused
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          PROJECT_REF="zeixqdprasspwpbvcgbl"
+
+          STATUS=$(curl -s -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$PROJECT_REF" | jq -r '.status')
+
+          echo "Nuvarande status: $STATUS"
+
+          if [ "$STATUS" = "INACTIVE" ]; then
+            echo "Projektet är pausat - skickar återställningskommando..."
+            curl -s -X POST -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+              "https://api.supabase.com/v1/projects/$PROJECT_REF/restore"
+            echo "Klart. Projektet återställs nu (tar ett par minuter)."
+          else
+            echo "Allt bra, projektet är aktivt. Inget att göra."
+          fi
