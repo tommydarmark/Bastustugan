@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # Varje dag kl 06:00 UTC (istället för en gång i veckan)
+    - cron: '0 6 * * *'   # Varje dag kl 06:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -11,9 +11,10 @@ jobs:
     steps:
       - name: Write heartbeat to Supabase
         run: |
-          curl -s -X POST "https://zeixqdprasspwpbvcgbl.supabase.co/rest/v1/keepalive" \
+          # -f gör att körningen blir RÖD om skrivningen avvisas (fel tabell, RLS, pausat projekt osv.)
+          curl -sS -f -X POST "https://zeixqdprasspwpbvcgbl.supabase.co/rest/v1/keepalive" \
             -H "apikey: sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P" \
             -H "Authorization: Bearer sb_publishable_jrJXiwRRIgCNdR0YNFO4JQ_ET_n6J3P" \
             -H "Content-Type: application/json" \
-            -H "Prefer: resolution=merge-duplicates" \
+            -H "Prefer: resolution=merge-duplicates,return=representation" \
             -d '{"id": 1, "pinged_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
